@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pause Ad Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            padding: 40px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        
+        .tv-container {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 60px rgba(0,0,0,0.5);
+            margin: 0 auto 30px;
+            width: fit-content;
+        }
+        
+        .tv-screen {
+            width: 640px;
+            height: 360px;
+            background: #000;
+            border: 3px solid #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-space {
+            width: 100%;
+            height: 360px;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            position: relative;
+            transition: filter 0.5s ease-in-out;
+        }
+        
+        .content-space.paused {
+            filter: brightness(0.4);
+        }
+        
+        .play-icon {
+            font-size: 80px;
+            opacity: 0.3;
+            position: absolute;
+            transition: opacity 0.5s;
+        }
+        
+        .pause-icon {
+            font-size: 80px;
+            opacity: 0;
+            position: absolute;
+            transition: opacity 0.5s;
+            color: white;
+        }
+        
+        .content-space.paused .play-icon {
+            opacity: 0;
+        }
+        
+        .content-space.paused .pause-icon {
+            opacity: 0.6;
+        }
+        
+        .ad-overlay {
+            position: absolute;
+            width: 400px;
+            height: 280px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: all 0.5s ease-in-out;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ad-overlay.visible {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        
+        .ad-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ad-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a365d;
+            padding: 20px;
+        }
+        
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .tv-stand {
+            width: 200px;
+            height: 8px;
+            background: #333;
+            margin: 15px auto 0;
+            border-radius: 4px;
+        }
+        
+        .tv-base {
+            width: 100px;
+            height: 35px;
+            background: #1a1a1a;
+            margin: 0 auto;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        
+        .status-value {
+            font-weight: bold;
+            color: #60a5fa;
+        }
+        
+        .timeline {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .phase-label {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pause Ad Format - Live Animation</h1>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Playback State:</span>
+                <span class="status-value" id="playback-state">Playing</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Ad Display:</span>
+                <span class="status-value" id="ad-status">Not Active</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Content Visibility:</span>
+                <span class="status-value" id="content-visibility">Full Brightness</span>
+            </div>
+        </div>
+        
+        <div class="phase-label" id="phase-label">Phase: Content Playing</div>
+        
+        <div class="tv-container">
+            <div class="tv-screen" id="tv-screen">
+                <div class="content-space" id="content-space">
+                    <span class="play-icon">▶</span>
+                    <span class="pause-icon">⏸</span>
+                    Video Content
+                </div>
+                <div class="ad-overlay" id="ad-overlay">
+                    <div class="ad-header">
+                        <span>ADVERTISEMENT</span>
+                        <button class="close-btn" onclick="closeAd()">×</button>
+                    </div>
+                    <div class="ad-body">
+                        Your Ad Content Here
+                    </div>
+                </div>
+            </div>
+            <div class="tv-stand"></div>
+            <div class="tv-base"></div>
+        </div>
+        
+        <div class="timeline">
+            <div style="color: white; font-weight: 600; margin-bottom: 10px;">Timeline</div>
+            <div class="timeline-bar">
+                <div class="timeline-progress" id="progress"></div>
+            </div>
+            <div class="timeline-labels">
+                <span>0s - Playing</span>
+                <span>3s - Pause</span>
+                <span>6s - Ad Active</span>
+                <span>9s - Close Ad</span>
+                <span>12s - Resume</span>
+            </div>
+        </div>
+        
+        <div class="control-buttons">
+            <button id="play-btn" onclick="startAnimation()">Play Animation</button>
+            <button id="reset-btn" onclick="resetAnimation()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let animationRunning = false;
+        let progressInterval;
+        let currentTime = 0;
+        const totalDuration = 12;
+        
+        const contentSpace = document.getElementById('content-space');
+        const adOverlay = document.getElementById('ad-overlay');
+        const playbackStateEl = document.getElementById('playback-state');
+        const adStatusEl = document.getElementById('ad-status');
+        const contentVisibilityEl = document.getElementById('content-visibility');
+        const phaseLabelEl = document.getElementById('phase-label');
+        const progressBar = document.getElementById('progress');
+        const playBtn = document.getElementById('play-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        function updateStatus(playback, adActive, visibility, phase) {
+            playbackStateEl.textContent = playback;
+            adStatusEl.textContent = adActive;
+            contentVisibilityEl.textContent = visibility;
+            phaseLabelEl.textContent = phase;
+        }
+        
+        function startAnimation() {
+            if (animationRunning) return;
+            
+            animationRunning = true;
+            currentTime = 0;
+            playBtn.disabled = true;
+            resetBtn.disabled = true;
+            
+            // Phase 1: Normal playback (0-3s)
+            updateStatus('Playing', 'Not Active', 'Full Brightness', 'Phase 1: Content Playing');
+            contentSpace.classList.remove('paused');
+            adOverlay.classList.remove('visible');
+            
+            // Update progress bar
+            progressInterval = setInterval(() => {
+                currentTime += 0.1;
+                const progress = (currentTime / totalDuration) * 100;
+                progressBar.style.width = progress + '%';
+                
+                if (currentTime >= totalDuration) {
+                    clearInterval(progressInterval);
+                }
+            }, 100);
+            
+            // Phase 2: User pauses (3s)
+            setTimeout(() => {
+                updateStatus('Paused', 'Not Active', 'Dimmed', 'Phase 2: User Paused Content');
+                contentSpace.classList.add('paused');
+            }, 3000);
+            
+            // Phase 3: Ad appears (3.5s)
+            setTimeout(() => {
+                updateStatus('Paused', 'Active (Overlay)', 'Dimmed', 'Phase 3: Pause Ad Displayed');
+                adOverlay.classList.add('visible');
+            }, 3500);
+            
+            // Phase 4: Ad closes (9s)
+            setTimeout(() => {
+                updateStatus('Paused', 'Closing', 'Dimmed', 'Phase 4: Ad Closed');
+                adOverlay.classList.remove('visible');
+            }, 9000);
+            
+            // Phase 5: Content resumes (9.5s)
+            setTimeout(() => {
+                updateStatus('Playing', 'Not Active', 'Full Brightness', 'Phase 5: Content Resumed');
+                contentSpace.classList.remove('paused');
+            }, 9500);
+            
+            // End animation
+            setTimeout(() => {
+                animationRunning = false;
+                playBtn.disabled = false;
+                resetBtn.disabled = false;
+            }, 12000);
+        }
+        
+        function resetAnimation() {
+            clearInterval(progressInterval);
+            animationRunning = false;
+            currentTime = 0;
+            progressBar.style.width = '0%';
+            contentSpace.classList.remove('paused');
+            adOverlay.classList.remove('visible');
+            updateStatus('Playing', 'Not Active', 'Full Brightness', 'Phase: Content Playing');
+            playBtn.disabled = false;
+            resetBtn.disabled = false;
+        }
+        
+        function closeAd() {
+            if (animationRunning) {
+                adOverlay.classList.remove('visible');
+                updateStatus('Paused', 'Closed', 'Dimmed', 'Phase: Ad Closed by User');
+            }
+        }
+    </script>
+</body>
+</html>
