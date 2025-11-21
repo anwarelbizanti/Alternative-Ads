@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squeezeback Ad Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 40px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 50px;
+        }
+        
+        .tv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .tv-container {
+            text-align: center;
+        }
+        
+        .tv-frame {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: inline-block;
+        }
+        
+        .tv-screen {
+            width: 400px;
+            height: 225px;
+            background: #000;
+            border: 3px solid #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ad-space {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 2px solid #fff;
+            transition: height 0.3s ease;
+        }
+        
+        .content-space {
+            width: 100%;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            position: relative;
+        }
+        
+        .content-space::before {
+            content: '▶';
+            position: absolute;
+            font-size: 40px;
+            opacity: 0.3;
+        }
+        
+        .state-1 .ad-space {
+            height: 0;
+        }
+        
+        .state-1 .content-space {
+            height: 225px;
+        }
+        
+        .state-2 .ad-space {
+            height: 90px;
+        }
+        
+        .state-2 .content-space {
+            height: 135px;
+        }
+        
+        .state-3 .ad-space {
+            height: 0;
+        }
+        
+        .state-3 .content-space {
+            height: 225px;
+        }
+        
+        .label {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .description {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .tv-stand {
+            width: 150px;
+            height: 8px;
+            background: #333;
+            margin: 15px auto 0;
+            border-radius: 4px;
+        }
+        
+        .tv-base {
+            width: 80px;
+            height: 30px;
+            background: #1a1a1a;
+            margin: 0 auto;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .arrow {
+            font-size: 40px;
+            color: #667eea;
+            margin: 20px 0;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .tv-screen {
+                width: 300px;
+                height: 169px;
+            }
+            
+            .state-2 .ad-space {
+                height: 68px;
+            }
+            
+            .state-2 .content-space {
+                height: 101px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Squeezeback Ad Format: TV Screen States</h1>
+        
+        <div class="tv-grid">
+            <!-- State 1: Normal Content -->
+            <div class="tv-container">
+                <div class="tv-frame">
+                    <div class="tv-screen state-1">
+                        <div class="ad-space"></div>
+                        <div class="content-space">Video Content</div>
+                    </div>
+                    <div class="tv-stand"></div>
+                    <div class="tv-base"></div>
+                </div>
+                <div class="label">State 1: Normal Playback</div>
+                <div class="description">
+                    Content plays at full screen.<br>
+                    No ad displayed.
+                </div>
+            </div>
+            
+            <!-- State 2: Squeezeback Active -->
+            <div class="tv-container">
+                <div class="tv-frame">
+                    <div class="tv-screen state-2">
+                        <div class="ad-space">AD CONTENT</div>
+                        <div class="content-space">Video Content</div>
+                    </div>
+                    <div class="tv-stand"></div>
+                    <div class="tv-base"></div>
+                </div>
+                <div class="label">State 2: Squeezeback Active</div>
+                <div class="description">
+                    Ad expands from top (typically 40% of screen).<br>
+                    Content shrinks but remains visible.<br>
+                    Duration: 10-30 seconds typical.
+                </div>
+            </div>
+            
+            <!-- State 3: Return to Normal -->
+            <div class="tv-container">
+                <div class="tv-frame">
+                    <div class="tv-screen state-3">
+                        <div class="ad-space"></div>
+                        <div class="content-space">Video Content</div>
+                    </div>
+                    <div class="tv-stand"></div>
+                    <div class="tv-base"></div>
+                </div>
+                <div class="label">State 3: Return to Full Screen</div>
+                <div class="description">
+                    Ad collapses.<br>
+                    Content returns to full screen.<br>
+                    Playback continues.
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: white; padding: 30px; border-radius: 10px; margin-top: 40px;">
+            <h2 style="color: #333; margin-top: 0;">Technical Requirements</h2>
+            <ul style="color: #666; line-height: 1.8;">
+                <li>Player must support dynamic layout resizing</li>
+                <li>OpenRTB bid request must signal squeezeback capability</li>
+                <li>VAST creative must specify expansion dimensions</li>
+                <li>Typical expansion: 30-40% of screen height</li>
+                <li>Common use cases: Pause ads, mid-roll breaks, live event overlays</li>
+                <li>Content audio typically continues during squeezeback</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
