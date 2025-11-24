@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<!-- saved from url=(0075)file:///Users/anwarelbizanti/Downloads/l-shape-left-bottom-animation_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L-Shaped Squeezeback Ad Animation (Left + Bottom)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            padding: 40px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        
+        .tv-container {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 60px rgba(0,0,0,0.5);
+            margin: 0 auto 30px;
+            width: fit-content;
+        }
+        
+        .tv-screen {
+            width: 640px;
+            height: 360px;
+            background: #000;
+            border: 3px solid #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Left ad bar */
+        .ad-space-left {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border-right: 2px solid #fff;
+            transition: width 1s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+        
+        /* Bottom ad bar */
+        .ad-space-bottom {
+            width: 100%;
+            height: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 2px solid #fff;
+            transition: height 1s ease-in-out;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            z-index: 2;
+        }
+        
+        .content-space {
+            width: 640px;
+            height: 360px;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: all 1s ease-in-out;
+        }
+        
+        .play-icon {
+            font-size: 60px;
+            opacity: 0.3;
+            position: absolute;
+        }
+        
+        /* Animation states */
+        .tv-screen.state-normal .ad-space-left {
+            width: 0;
+        }
+        
+        .tv-screen.state-normal .ad-space-bottom {
+            height: 0;
+        }
+        
+        .tv-screen.state-normal .content-space {
+            width: 640px;
+            height: 360px;
+            top: 0;
+            left: 0;
+        }
+        
+        .tv-screen.state-squeezed .ad-space-left {
+            width: 160px;
+        }
+        
+        .tv-screen.state-squeezed .ad-space-bottom {
+            height: 90px;
+        }
+        
+        .tv-screen.state-squeezed .content-space {
+            width: 480px;
+            height: 270px;
+            top: 0;
+            left: 160px;
+        }
+        
+        .tv-stand {
+            width: 200px;
+            height: 8px;
+            background: #333;
+            margin: 15px auto 0;
+            border-radius: 4px;
+        }
+        
+        .tv-base {
+            width: 100px;
+            height: 35px;
+            background: #1a1a1a;
+            margin: 0 auto;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        
+        .status-value {
+            font-weight: bold;
+            color: #60a5fa;
+        }
+        
+        .timeline {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .phase-label {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .diagram {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .diagram-item {
+            text-align: center;
+        }
+        
+        .diagram-box {
+            width: 120px;
+            height: 80px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            margin: 0 auto 10px;
+            position: relative;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .diagram-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px 0 0 6px;
+        }
+        
+        .diagram-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0 0 6px 6px;
+        }
+        
+        .diagram-content {
+            position: absolute;
+            top: 0;
+            left: 30px;
+            right: 0;
+            bottom: 20px;
+            background: rgba(30, 60, 114, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+        
+        .diagram-label {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>L-Shaped Squeezeback Ad - Left + Bottom</h1>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Current State:</span>
+                <span class="status-value" id="current-state">Normal Playback</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Ad Display:</span>
+                <span class="status-value" id="ad-status">Not Active</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Content Area:</span>
+                <span class="status-value" id="content-size">640x360 (100%)</span>
+            </div>
+        </div>
+        
+        <div class="phase-label" id="phase-label">Phase 5: Content Resumed</div>
+        
+        <div class="tv-container">
+            <div class="tv-screen state-normal" id="tv-screen">
+                <div class="ad-space-left" id="ad-space-left">LEFT AD</div>
+                <div class="ad-space-bottom" id="ad-space-bottom">BOTTOM AD</div>
+                <div class="content-space" id="content-space">
+                    <span class="play-icon">▶</span>
+                    Video Content
+                </div>
+            </div>
+            <div class="tv-stand"></div>
+            <div class="tv-base"></div>
+        </div>
+        
+        <div class="diagram">
+            <div class="diagram-item">
+                <div class="diagram-box">
+                    <div class="diagram-content">Content</div>
+                </div>
+                <div class="diagram-label">Normal State</div>
+            </div>
+            <div class="diagram-item">
+                <div class="diagram-box">
+                    <div class="diagram-left"></div>
+                    <div class="diagram-bottom"></div>
+                    <div class="diagram-content">Content</div>
+                </div>
+                <div class="diagram-label">L-Shape Active</div>
+            </div>
+        </div>
+        
+        <div class="timeline">
+            <div style="color: white; font-weight: 600; margin-bottom: 10px;">Timeline</div>
+            <div class="timeline-bar">
+                <div class="timeline-progress" id="progress" style="width: 100.833%;"></div>
+            </div>
+            <div class="timeline-labels">
+                <span>0s - Normal</span>
+                <span>3s - Expand</span>
+                <span>6s - Active</span>
+                <span>9s - Collapse</span>
+                <span>12s - Normal</span>
+            </div>
+        </div>
+        
+        <div class="control-buttons">
+            <button id="play-btn" onclick="startAnimation()">Play Animation</button>
+            <button id="reset-btn" onclick="resetAnimation()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let animationRunning = false;
+        let progressInterval;
+        let currentTime = 0;
+        const totalDuration = 12;
+        
+        const tvScreen = document.getElementById('tv-screen');
+        const currentStateEl = document.getElementById('current-state');
+        const adStatusEl = document.getElementById('ad-status');
+        const contentSizeEl = document.getElementById('content-size');
+        const phaseLabelEl = document.getElementById('phase-label');
+        const progressBar = document.getElementById('progress');
+        const playBtn = document.getElementById('play-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        function updateStatus(state, adActive, contentSize, phase) {
+            currentStateEl.textContent = state;
+            adStatusEl.textContent = adActive;
+            contentSizeEl.textContent = contentSize;
+            phaseLabelEl.textContent = phase;
+        }
+        
+        function startAnimation() {
+            if (animationRunning) return;
+            
+            animationRunning = true;
+            currentTime = 0;
+            playBtn.disabled = true;
+            resetBtn.disabled = true;
+            
+            // Phase 1: Normal playback (0-3s)
+            updateStatus('Normal Playback', 'Not Active', '640x360 (100%)', 'Phase 1: Content Playing');
+            tvScreen.className = 'tv-screen state-normal';
+            
+            // Update progress bar
+            progressInterval = setInterval(() => {
+                currentTime += 0.1;
+                const progress = (currentTime / totalDuration) * 100;
+                progressBar.style.width = progress + '%';
+                
+                if (currentTime >= totalDuration) {
+                    clearInterval(progressInterval);
+                }
+            }, 100);
+            
+            // Phase 2: L-shape squeeze (3s)
+            setTimeout(() => {
+                updateStatus('L-Shape Squeezing', 'Expanding', '480x270 (53%)', 'Phase 2: L-Shape Expanding');
+                tvScreen.className = 'tv-screen state-squeezed';
+            }, 3000);
+            
+            // Phase 3: L-shape active (6s)
+            setTimeout(() => {
+                updateStatus('L-Shape Active', 'Active (Left + Bottom)', '480x270 (53%)', 'Phase 3: L-Shape Ad Active');
+            }, 4000);
+            
+            // Phase 4: Collapse (9s)
+            setTimeout(() => {
+                updateStatus('Returning to Normal', 'Collapsing', '640x360 (Expanding)', 'Phase 4: L-Shape Collapsing');
+                tvScreen.className = 'tv-screen state-normal';
+            }, 9000);
+            
+            // Phase 5: Back to normal (12s)
+            setTimeout(() => {
+                updateStatus('Normal Playback', 'Not Active', '640x360 (100%)', 'Phase 5: Content Resumed');
+            }, 10000);
+            
+            // End animation
+            setTimeout(() => {
+                animationRunning = false;
+                playBtn.disabled = false;
+                resetBtn.disabled = false;
+            }, 12000);
+        }
+        
+        function resetAnimation() {
+            clearInterval(progressInterval);
+            animationRunning = false;
+            currentTime = 0;
+            progressBar.style.width = '0%';
+            tvScreen.className = 'tv-screen state-normal';
+            updateStatus('Normal Playback', 'Not Active', '640x360 (100%)', 'Phase: Content Playing');
+            playBtn.disabled = false;
+            resetBtn.disabled = false;
+        }
+    </script>
+
+
+</body></html>
