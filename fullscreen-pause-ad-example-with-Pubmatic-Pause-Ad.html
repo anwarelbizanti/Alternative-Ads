@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full-Screen Pause Ad Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            padding: 40px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        
+        .tv-container {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 60px rgba(0,0,0,0.5);
+            margin: 0 auto 30px;
+            width: fit-content;
+        }
+        
+        .tv-screen {
+            width: 640px;
+            height: 360px;
+            background: #000;
+            border: 3px solid #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-space {
+            width: 100%;
+            height: 360px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            transition: opacity 0.5s ease-in-out;
+            background: #000;
+        }
+        
+        .content-space.hidden {
+            opacity: 0;
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+        
+        .content-space.paused .pause-overlay {
+            display: flex;
+        }
+        
+        .pause-icon {
+            font-size: 80px;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .ad-fullscreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.5s ease-in-out;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .ad-fullscreen.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .ad-fullscreen.has-image {
+            background: #000;
+        }
+        
+        .ad-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        
+        .ad-image.visible {
+            display: block;
+        }
+        
+        .ad-content {
+            text-align: center;
+            padding: 40px;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .ad-content.hidden {
+            display: none !important;
+        }
+        
+        .ad-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .ad-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .ad-logo {
+            width: 120px;
+            height: 120px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin: 0 auto 30px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .ad-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .tv-stand {
+            width: 200px;
+            height: 8px;
+            background: #333;
+            margin: 15px auto 0;
+            border-radius: 4px;
+        }
+        
+        .tv-base {
+            width: 100px;
+            height: 35px;
+            background: #1a1a1a;
+            margin: 0 auto;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        
+        .status-value {
+            font-weight: bold;
+            color: #60a5fa;
+        }
+        
+        .timeline {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .timeline-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .phase-label {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Full-Screen Pause Ad Format - Live Animation</h1>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">Playback State:</span>
+                <span class="status-value" id="playback-state">Playing</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Ad Display:</span>
+                <span class="status-value" id="ad-status">Not Active</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Content Visibility:</span>
+                <span class="status-value" id="content-visibility">Visible</span>
+            </div>
+        </div>
+        
+        <div class="phase-label" id="phase-label">Phase: Content Playing</div>
+        
+        <div class="tv-container">
+            <div class="tv-screen" id="tv-screen">
+                <div class="content-space" id="content-space">
+                    <video class="video-player" id="video-player" loop muted>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4#t=120" type="video/mp4">
+                        Your browser does not support video playback.
+                    </video>
+                    <div class="pause-overlay">
+                        <div class="pause-icon">⏸</div>
+                    </div>
+                </div>
+                <div class="ad-fullscreen" id="ad-fullscreen">
+                    <div class="ad-badge">ADVERTISEMENT</div>
+                    <button class="close-btn" onclick="closeAd()">×</button>
+                    <img class="ad-image" id="ad-image" alt="Advertisement" />
+                    <div class="ad-content" id="ad-content">
+                        <div class="ad-logo">🎯</div>
+                        <div class="ad-title">Your Brand Here</div>
+                        <div class="ad-message">Full-screen pause advertisement</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tv-stand"></div>
+            <div class="tv-base"></div>
+        </div>
+        
+        <div class="timeline">
+            <div style="color: white; font-weight: 600; margin-bottom: 10px;">Timeline</div>
+            <div class="timeline-bar">
+                <div class="timeline-progress" id="progress"></div>
+            </div>
+            <div class="timeline-labels">
+                <span>0s - Playing</span>
+                <span>3s - Pause</span>
+                <span>4s - Ad Takeover</span>
+                <span>9s - Close Ad</span>
+                <span>10s - Resume</span>
+            </div>
+        </div>
+        
+        <div class="control-buttons">
+            <button id="play-btn" onclick="startAnimation()">Play Animation</button>
+            <button id="pause-btn" onclick="triggerPauseAd()" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">Trigger Pause Ad</button>
+            <button id="unpause-btn" onclick="unpauseContent()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);" disabled>Unpause Content</button>
+            <button id="reset-btn" onclick="resetAnimation()">Reset</button>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 25px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; backdrop-filter: blur(10px);">
+            <div style="color: white; font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <span>VAST XML Configuration</span>
+                <button onclick="loadVASTExample()" style="padding: 8px 16px; font-size: 14px;">Load Example VAST</button>
+            </div>
+            <textarea id="vast-xml" 
+                      style="width: 100%; height: 200px; background: rgba(0,0,0,0.3); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 12px; resize: vertical;"
+                      placeholder="Paste your VAST XML here or click 'Load Example VAST' to see a sample..."></textarea>
+            <div style="color: #94a3b8; font-size: 12px; margin-top: 10px;">
+                This VAST XML demonstrates how a pause ad could be delivered. Note: In production, pause ads are typically delivered via platform-specific APIs rather than VAST.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let animationRunning = false;
+        let progressInterval;
+        let currentTime = 0;
+        const totalDuration = 12;
+        let manualPauseMode = false;
+        
+        const contentSpace = document.getElementById('content-space');
+        const adFullscreen = document.getElementById('ad-fullscreen');
+        const videoPlayer = document.getElementById('video-player');
+        const playbackStateEl = document.getElementById('playback-state');
+        const adStatusEl = document.getElementById('ad-status');
+        const contentVisibilityEl = document.getElementById('content-visibility');
+        const phaseLabelEl = document.getElementById('phase-label');
+        const progressBar = document.getElementById('progress');
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const unpauseBtn = document.getElementById('unpause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const vastXmlEl = document.getElementById('vast-xml');
+        const adImage = document.getElementById('ad-image');
+        const adContent = document.getElementById('ad-content');
+        
+        let currentAdImageUrl = null;
+        
+        // Initialize video to start at 2 minutes
+        videoPlayer.addEventListener('loadedmetadata', function() {
+            videoPlayer.currentTime = 120;
+        });
+        
+        function parseVASTForImage(xmlString) {
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+                
+                // Check for parse errors
+                const parseError = xmlDoc.querySelector('parsererror');
+                if (parseError) {
+                    console.error('XML parsing error');
+                    return null;
+                }
+                
+                // Look for MediaFile with image type
+                const mediaFiles = xmlDoc.querySelectorAll('MediaFile');
+                for (let mediaFile of mediaFiles) {
+                    const type = mediaFile.getAttribute('type');
+                    if (type && (type.includes('image') || type.includes('jpeg') || type.includes('png'))) {
+                        const url = mediaFile.textContent.trim();
+                        return url;
+                    }
+                }
+                
+                // Also check for StaticResource in CompanionAds
+                const staticResources = xmlDoc.querySelectorAll('StaticResource');
+                for (let resource of staticResources) {
+                    const type = resource.getAttribute('creativeType');
+                    if (type && type.includes('image')) {
+                        const url = resource.textContent.trim();
+                        return url;
+                    }
+                }
+                
+                return null;
+            } catch (e) {
+                console.error('Error parsing VAST XML:', e);
+                return null;
+            }
+        }
+        
+        function updateAdDisplay() {
+            const vastXml = vastXmlEl.value.trim();
+            if (vastXml) {
+                const imageUrl = parseVASTForImage(vastXml);
+                if (imageUrl) {
+                    currentAdImageUrl = imageUrl;
+                    adImage.src = imageUrl;
+                    console.log('Loaded ad image from VAST:', imageUrl);
+                } else {
+                    currentAdImageUrl = null;
+                    console.log('No image found in VAST XML');
+                }
+            } else {
+                currentAdImageUrl = null;
+            }
+        }
+        
+        function showAdWithImage() {
+            if (currentAdImageUrl) {
+                adContent.classList.add('hidden');
+                adImage.classList.add('visible');
+                adFullscreen.classList.add('has-image');
+            } else {
+                adContent.classList.remove('hidden');
+                adImage.classList.remove('visible');
+                adFullscreen.classList.remove('has-image');
+            }
+        }
+        
+        function hideAdImage() {
+            // Wait for transition before swapping content
+            adImage.classList.remove('visible');
+            adFullscreen.classList.remove('has-image');
+            setTimeout(() => {
+                adContent.classList.remove('hidden');
+            }, 600); // Wait for ad to fully hide
+        }
+        
+        function updateStatus(playback, adActive, visibility, phase) {
+            playbackStateEl.textContent = playback;
+            adStatusEl.textContent = adActive;
+            contentVisibilityEl.textContent = visibility;
+            phaseLabelEl.textContent = phase;
+        }
+        
+        function loadVASTExample() {
+            const exampleVAST = `<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="4.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.iab.com/VAST">
+  <Ad id="pause-ad-001">
+    <InLine>
+      <AdSystem version="1.0">PubMatic SSP</AdSystem>
+      <AdTitle>Pause Ad - Sample Brand</AdTitle>
+      <Impression><![CDATA[https://pubmatic.com/impression?id=12345]]></Impression>
+      <Creatives>
+        <Creative id="creative-001">
+          <Linear>
+            <Duration>00:00:30</Duration>
+            <MediaFiles>
+              <MediaFile delivery="progressive" type="image/jpeg" width="1920" height="1080">
+                <![CDATA[https://storage.googleapis.com/martin-bidder-dev/e75197fd-e325-468d-9580-0cf530f49c46.jpg]]>
+              </MediaFile>
+            </MediaFiles>
+            <VideoClicks>
+              <ClickThrough><![CDATA[https://www.example.com/landing]]></ClickThrough>
+            </VideoClicks>
+          </Linear>
+        </Creative>
+      </Creatives>
+      <Extensions>
+        <Extension type="PauseAdConfig">
+          <PauseAdParameters>
+            <TriggerEvent>user_pause</TriggerEvent>
+            <CloseButtonEnabled>true</CloseButtonEnabled>
+            <AdPosition>fullscreen</AdPosition>
+          </PauseAdParameters>
+        </Extension>
+      </Extensions>
+    </InLine>
+  </Ad>
+</VAST>`;
+            vastXmlEl.value = exampleVAST;
+            updateAdDisplay();
+        }
+        
+        function triggerPauseAd() {
+            if (animationRunning || manualPauseMode) return;
+            
+            // Update ad display from VAST XML before showing
+            updateAdDisplay();
+            
+            manualPauseMode = true;
+            playBtn.disabled = true;
+            pauseBtn.disabled = true;
+            unpauseBtn.disabled = false;
+            
+            // Pause the video
+            videoPlayer.pause();
+            contentSpace.classList.add('paused');
+            updateStatus('Paused', 'Not Active', 'Visible', 'User Paused Content');
+            
+            // Show pause ad after 1 second
+            setTimeout(() => {
+                updateStatus('Paused', 'Active (Full-Screen)', 'Hidden', 'Full-Screen Pause Ad Active');
+                showAdWithImage();
+                adFullscreen.classList.add('visible');
+                contentSpace.classList.add('hidden');
+            }, 1000);
+        }
+        
+        function unpauseContent() {
+            if (!manualPauseMode) return;
+            
+            adFullscreen.classList.remove('visible');
+            hideAdImage();
+            contentSpace.classList.remove('hidden');
+            contentSpace.classList.remove('paused');
+            updateStatus('Playing', 'Not Active', 'Visible', 'Content Resumed');
+            videoPlayer.play();
+            
+            manualPauseMode = false;
+            playBtn.disabled = false;
+            pauseBtn.disabled = false;
+            unpauseBtn.disabled = true;
+        }
+        
+        function closePauseAd() {
+            if (!manualPauseMode) return;
+            unpauseContent();
+        }
+        
+        function startAnimation() {
+            if (animationRunning || manualPauseMode) return;
+            
+            animationRunning = true;
+            currentTime = 0;
+            playBtn.disabled = true;
+            pauseBtn.disabled = true;
+            unpauseBtn.disabled = true;
+            resetBtn.disabled = true;
+            
+            // Phase 1: Normal playback (0-3s)
+            updateStatus('Playing', 'Not Active', 'Visible', 'Phase 1: Content Playing');
+            contentSpace.classList.remove('paused');
+            contentSpace.classList.remove('hidden');
+            adFullscreen.classList.remove('visible');
+            videoPlayer.play();
+            
+            // Update progress bar
+            progressInterval = setInterval(() => {
+                currentTime += 0.1;
+                const progress = (currentTime / totalDuration) * 100;
+                progressBar.style.width = progress + '%';
+                
+                if (currentTime >= totalDuration) {
+                    clearInterval(progressInterval);
+                }
+            }, 100);
+            
+            // Phase 2: User pauses (3s)
+            setTimeout(() => {
+                updateStatus('Paused', 'Not Active', 'Visible', 'Phase 2: User Paused Content');
+                contentSpace.classList.add('paused');
+                videoPlayer.pause();
+            }, 3000);
+            
+            // Phase 3: Full-screen ad takes over (4s)
+            setTimeout(() => {
+                updateStatus('Paused', 'Active (Full-Screen)', 'Hidden', 'Phase 3: Full-Screen Pause Ad');
+                updateAdDisplay();
+                showAdWithImage();
+                adFullscreen.classList.add('visible');
+                contentSpace.classList.add('hidden');
+            }, 4000);
+            
+            // Phase 4: Ad closes (9s)
+            setTimeout(() => {
+                updateStatus('Paused', 'Closing', 'Visible', 'Phase 4: Ad Closing');
+                adFullscreen.classList.remove('visible');
+                hideAdImage();
+                contentSpace.classList.remove('hidden');
+            }, 9000);
+            
+            // Phase 5: Content resumes (10s)
+            setTimeout(() => {
+                updateStatus('Playing', 'Not Active', 'Visible', 'Phase 5: Content Resumed');
+                contentSpace.classList.remove('paused');
+                videoPlayer.play();
+            }, 10000);
+            
+            // End animation
+            setTimeout(() => {
+                animationRunning = false;
+                playBtn.disabled = false;
+                pauseBtn.disabled = false;
+                unpauseBtn.disabled = true;
+                resetBtn.disabled = false;
+            }, 12000);
+        }
+        
+        function resetAnimation() {
+            clearInterval(progressInterval);
+            animationRunning = false;
+            manualPauseMode = false;
+            currentTime = 0;
+            progressBar.style.width = '0%';
+            contentSpace.classList.remove('paused');
+            contentSpace.classList.remove('hidden');
+            adFullscreen.classList.remove('visible');
+            hideAdImage();
+            videoPlayer.pause();
+            videoPlayer.currentTime = 120;
+            updateStatus('Playing', 'Not Active', 'Visible', 'Phase: Content Playing');
+            playBtn.disabled = false;
+            pauseBtn.disabled = false;
+            unpauseBtn.disabled = true;
+            resetBtn.disabled = false;
+        }
+        
+        function closeAd() {
+            if (animationRunning) {
+                adFullscreen.classList.remove('visible');
+                hideAdImage();
+                contentSpace.classList.remove('hidden');
+                updateStatus('Paused', 'Closed', 'Visible', 'Phase: Ad Closed by User');
+            } else if (manualPauseMode) {
+                closePauseAd();
+            }
+        }
+        
+        // Listen for changes to the VAST XML textarea
+        vastXmlEl.addEventListener('input', updateAdDisplay);
+    </script>
+</body>
+</html>
